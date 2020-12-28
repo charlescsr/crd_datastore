@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@csr.qfh5r.mongodb.net/test_crd?retryWrites=true&w=majority"
 client = pymongo.MongoClient(CONNECTION_STRING)
-user_db = client['users']['user_data']
+user_db = client['test_crd']['users']
 db = client['test_crd']['crd']
 
 @app.route("/", methods = ["POST", "GET"])
