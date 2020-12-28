@@ -1,3 +1,3 @@
-# flask_template
+# CRD Key-Value Data Store
 
-Simple Template to set up a Flask app
+This is a simple Key-Value Data Store using Python
