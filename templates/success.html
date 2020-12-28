@@ -108,6 +108,7 @@
 					<button class="tablinks" onclick="openCity(event, 'Create')">Create</button>
 					<button class="tablinks" onclick="openCity(event, 'Read')">Read</button>
 					<button class="tablinks" onclick="openCity(event, 'Delete')">Delete</button>
+					<button class="tablinks" onclick="openCity(event, 'Download')">Download</button>
 				  </div>
 				  
 				  <div id="Create" class="tabcontent">
@@ -172,7 +173,14 @@
 							<button type="submit" class="btn btn-primary btn-block btn-lg" >Delete</button>
 						</div>
 					</form>
-				  </div>	
+				  </div>
+				  
+				  <div id="Download" class="tabcontent">
+					<form action="/download" method="post">
+							<button type="submit" class="btn btn-primary btn-block btn-lg" >Download Data Store</button>
+						</div>
+					</form>
+				  </div>
 			</div>
 			<script>
 				function openCity(evt, cityName) {

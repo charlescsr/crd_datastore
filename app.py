@@ -1,7 +1,9 @@
-from flask import Flask,render_template,request,redirect,url_for,session
+from flask import Flask,render_template,request,redirect,url_for,session, send_file
 from werkzeug.utils import secure_filename
 import json
 from flask_pymongo import pymongo
+from bson.json_util import dumps, loads
+from pathlib import Path 
 from cryptography.fernet import Fernet
 
 key = Fernet.generate_key()
@@ -20,39 +22,6 @@ db = client['test_crd']['crd']
 def log():
     return render_template("success.html")
     
-'''    
-@app.route("/allow", methods = ["POST", "GET"])
-def allow():
-    message=''
-    flag=0
-    if request.method == "POST":
-        u = request.form["id"]
-        pas = request.form["key"]
-        name = str(u).lower()
-        users = user_db.find({})
-        for x in users:
-            n = x['username']
-            if n == name:
-                flag = 1
-            
-        if flag == 0:
-            message = "Invalid Username"  
-            return render_template("login.html",msg=message) 
-        user = user_db.find({"username":name})
-        for x in user:
-            pwd = x['password']
-            sss = x['salt']
-            s = pwd.encode()
-            instance = sss.encode()
-            crypter = Fernet(instance)
-            decryptpw = crypter.decrypt(s)
-            returned = decryptpw.decode('utf8')
-            if returned == pas:
-                return render_template("success.html")
-            else:
-                message="Invalid Password"  
-                return render_template("login.html",msg=message) 
-'''
 @app.route("/create", methods = ["POST", "GET"])
 def create():
     k = request.form['key']
@@ -84,7 +53,6 @@ def read():
 @app.route("/delete", methods=["GET", "POST"])
 def delete():
     k = str(request.form.get("key"))
-    v = None 
     cur = db.find({"key": k})
     if cur.count() == 0:
         return "Key not found"
@@ -92,6 +60,20 @@ def delete():
     db.delete_one({"key": k})
 
     return "Key deleted successfully"
+
+@app.route("/download", methods=["GET", "POST"])
+def download():
+    cur = db.find({}, {"_id":0})
+    f = 'data.json'
+    list_cur = list(cur) 
+  
+    json_data = dumps(list_cur, indent = 4)  
+
+    with open('data.json', 'w') as file: 
+        file.write(json_data) 
+    
+    return send_file(Path('data.json'), attachment_filename=f, as_attachment=True)
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
