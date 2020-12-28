@@ -1,4 +1,6 @@
 from flask import Flask,render_template,request,redirect,url_for,session
+from werkzeug.utils import secure_filename
+import json
 from flask_pymongo import pymongo
 from cryptography.fernet import Fernet
 
@@ -12,52 +14,13 @@ CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mo
 client = pymongo.MongoClient(CONNECTION_STRING)
 
 user_db = client['test_crd']['users']
+db = client['test_crd']['crd']
 
 @app.route("/", methods = ["POST", "GET"])
 def log():
-    return render_template("login.html")
+    return render_template("success.html")
     
-@app.route("/signup", methods = ["POST", "GET"])
-def signup():
-    return render_template("register.html")
-
-@app.route("/register", methods = ["POST","GET"])
-def reg():
-  message = ''
-
-  if request.method == 'POST':
-
-    userid = request.form['id']
-    email = request.form['mail']
-    password = request.form['pwd']
-    r_password = request.form['repwd']
-
-    em = str(email).lower()
-    ur = str(userid).lower()
-    obj = password.encode()
-
-    instance = salt.encode()
-    crypter = Fernet(instance)
-    bush = crypter.encrypt(obj)
-    k = str(bush, 'utf8')
-
-    users = user_db.find({})
-  
-    for x in users:
-        usr = x['username']
-
-        if usr == ur:
-            message = "Username already exists"
-            return render_template("register.html", msg = message)
-
-        if password != r_password:
-            message = "Password doesn't match"
-            return render_template("register.html", msg = message)
-
-    user_db.insert_one({"username" : ur, "email" : em, "password" : k, "salt" : salt}) #Indent issue here. Now ok when bringing it backward
-
-    return render_template("login.html") 
-  
+'''    
 @app.route("/allow", methods = ["POST", "GET"])
 def allow():
     message=''
@@ -89,8 +52,25 @@ def allow():
             else:
                 message="Invalid Password"  
                 return render_template("login.html",msg=message) 
+'''
+@app.route("/create", methods = ["POST", "GET"])
+def create():
+    k = request.form['key']
+    value = request.files['value']
+    if value.filename.split('.')[1] == 'json':
+        value.save(secure_filename(value.filename))
+        f = open(value.filename,)
+        data = json.load(f)
+        fin_value = {"key": k, "value": data}
+        db.insert_one(fin_value)
 
+        return render_template("success.html", msg="Key created")
 
+    return render_template("success.html", msg="Wrong file given")
+
+@app.route("/read", methods=["GET", "POST"])
+def read():
+    pass
 
 if __name__ == "__main__":
     app.run(debug=True)

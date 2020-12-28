@@ -59,6 +59,41 @@
 		display: inline-block;
 		margin: 100px auto;
 	}
+	.tab {
+	overflow: hidden;
+	border: 1px solid #ccc;
+	background-color: #f1f1f1;
+	}
+
+	/* Style the buttons inside the tab */
+	.tab button {
+	background-color: inherit;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 14px 16px;
+	transition: 0.3s;
+	font-size: 17px;
+	}
+
+	/* Change background color of buttons on hover */
+	.tab button:hover {
+	background-color: #ddd;
+	}
+
+	/* Create an active/current tablink class */
+	.tab button.active {
+	background-color: #ccc;
+	}
+
+	/* Style the tab content */
+	.tabcontent {
+	display: none;
+	padding: 6px 12px;
+	border: 1px solid #ccc;
+	border-top: none;
+	}
 </style>
 </head>
 <body>
@@ -68,10 +103,99 @@
 		<div class="modal-content">
 			
 			<div class="modal-body">
-					<div class="form-group">
-						<h2>Logged in Successful</h2>
-					</div>	
+				<div class="tab">
+					<button class="tablinks" onclick="openCity(event, 'Create')">Create</button>
+					<button class="tablinks" onclick="openCity(event, 'Read')">Read</button>
+					<button class="tablinks" onclick="openCity(event, 'Delete')">Delete</button>
+				  </div>
+				  
+				  <div id="Create" class="tabcontent">
+					<form action="/create" method="post" enctype="multipart/form-data">
+						{% if msg %}
+						<span class="s"><p>{{ msg }}</p></span> 
+						{% endif %}
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-key"></i></span>
+								<input type="text" class="form-control" name="key" placeholder="Key" maxlength="32"  required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="s"><p>Value(JSON)</p></span>
+								<span class="input-group-addon"><i class="fa fa-code"></i></span>
+								<input id="jsfile" type="file" class="form-control" name="value" placeholder="Value(In JSON Max 16KB)" required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-times"></i></span>
+								<input id="ttl" type="number" class="form-control" name="ttl" placeholder="Time To Live(0 to skip)" required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<button type="submit" class="btn btn-primary btn-block btn-lg" >Create</button>
+						</div>
+					</form>
+				  </div>
+				  
+				  <div id="Read" class="tabcontent">
+					<form action="/read" method="post">
+						{% if msg %}
+						<span class="s"><p>{{ msg }}</p></span> 
+						{% endif %}
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-key"></i></span>
+								<input type="text" class="form-control" name="id" placeholder="Key" maxlength="32"  required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="s"><p>Value(JSON)</p></span>
+								<span class="input-group-addon"><i class="fa fa-code"></i></span>
+								<input id="jsfile" type="file" class="form-control" name="value" placeholder="Value(In JSON Max 16KB)" required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-times"></i></span>
+								<input id="ttl" type="number" class="form-control" name="ttl" placeholder="Time To Live(0 to skip)" required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<button type="submit" class="btn btn-primary btn-block btn-lg" >Create</button>
+						</div>
+					</form>
+				  </div>
+				  
+				  <div id="Delete" class="tabcontent">
+					<h3>Tokyo</h3>
+					<p>Tokyo is the capital of Japan.</p>
+				  </div>	
 			</div>
+			<script>
+				function openCity(evt, cityName) {
+				  var i, tabcontent, tablinks;
+				  tabcontent = document.getElementsByClassName("tabcontent");
+				  for (i = 0; i < tabcontent.length; i++) {
+					tabcontent[i].style.display = "none";
+				  }
+				  tablinks = document.getElementsByClassName("tablinks");
+				  for (i = 0; i < tablinks.length; i++) {
+					tablinks[i].className = tablinks[i].className.replace(" active", "");
+				  }
+				  document.getElementById(cityName).style.display = "block";
+				  evt.currentTarget.className += " active";
+				}
+			</script>
+			<script>
+			$('#jsfile').bind('change', function() {
+				if(this.files[0].size > 16000){
+					alert("File size exceeds 16KB")
+				} 
+			  });
+			</script>
 		</div>
 </div>   </div></div>  
 </body>
