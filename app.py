@@ -64,13 +64,34 @@ def create():
         fin_value = {"key": k, "value": data}
         db.insert_one(fin_value)
 
-        return render_template("success.html", msg="Key created")
+        return "Key created"
 
-    return render_template("success.html", msg="Wrong file given")
+    return "Wrong file format"
 
 @app.route("/read", methods=["GET", "POST"])
 def read():
-    pass
+    k = str(request.form.get("key"))
+    v = None 
+    cur = db.find({"key": k})
+    if cur.count() == 0:
+        return "Key not found"
+    
+    for x in cur:
+        v = x['value']
+
+    return "Value is "+str(v)
+
+@app.route("/delete", methods=["GET", "POST"])
+def delete():
+    k = str(request.form.get("key"))
+    v = None 
+    cur = db.find({"key": k})
+    if cur.count() == 0:
+        return "Key not found"
+    
+    db.delete_one({"key": k})
+
+    return "Key deleted successfully"
 
 if __name__ == "__main__":
     app.run(debug=True)

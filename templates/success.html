@@ -15,7 +15,7 @@
 		font-family: 'Varela Round', sans-serif;
 	}
 	.modal-login {
-		width: 350px;
+		width: 500px;
 		margin: 30px auto;
 	}
 	.modal-login .modal-content {
@@ -60,6 +60,7 @@
 		margin: 100px auto;
 	}
 	.tab {
+		align-items: center;
 	overflow: hidden;
 	border: 1px solid #ccc;
 	background-color: #f1f1f1;
@@ -111,8 +112,8 @@
 				  
 				  <div id="Create" class="tabcontent">
 					<form action="/create" method="post" enctype="multipart/form-data">
-						{% if msg %}
-						<span class="s"><p>{{ msg }}</p></span> 
+						{% if msg1 %}
+						<span class="s"><p>{{ msg1 }}</p></span> 
 						{% endif %}
 						<div class="form-group">
 							<div class="input-group">
@@ -141,37 +142,36 @@
 				  
 				  <div id="Read" class="tabcontent">
 					<form action="/read" method="post">
-						{% if msg %}
-						<span class="s"><p>{{ msg }}</p></span> 
+						{% if msg2 %}
+						<span class="s"><p>{{ msg2 }}</p></span> 
 						{% endif %}
 						<div class="form-group">
 							<div class="input-group">
 								<span class="input-group-addon"><i class="fa fa-key"></i></span>
-								<input type="text" class="form-control" name="id" placeholder="Key" maxlength="32"  required="required">
+								<input type="text" class="form-control" name="key" placeholder="Key to search" maxlength="32"  required="required">
 							</div>
 						</div>
 						<div class="form-group">
-							<div class="input-group">
-								<span class="s"><p>Value(JSON)</p></span>
-								<span class="input-group-addon"><i class="fa fa-code"></i></span>
-								<input id="jsfile" type="file" class="form-control" name="value" placeholder="Value(In JSON Max 16KB)" required="required">
-							</div>
-						</div>
-						<div class="form-group">
-							<div class="input-group">
-								<span class="input-group-addon"><i class="fa fa-times"></i></span>
-								<input id="ttl" type="number" class="form-control" name="ttl" placeholder="Time To Live(0 to skip)" required="required">
-							</div>
-						</div>
-						<div class="form-group">
-							<button type="submit" class="btn btn-primary btn-block btn-lg" >Create</button>
+							<button type="submit" class="btn btn-primary btn-block btn-lg" >Search</button>
 						</div>
 					</form>
 				  </div>
 				  
 				  <div id="Delete" class="tabcontent">
-					<h3>Tokyo</h3>
-					<p>Tokyo is the capital of Japan.</p>
+					<form action="/delete" method="post">
+						{% if msg2 %}
+						<span class="s"><p>{{ msg2 }}</p></span> 
+						{% endif %}
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-key"></i></span>
+								<input type="text" class="form-control" name="key" placeholder="Key to search" maxlength="32"  required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<button type="submit" class="btn btn-primary btn-block btn-lg" >Delete</button>
+						</div>
+					</form>
 				  </div>	
 			</div>
 			<script>
