@@ -1,4 +1,4 @@
-from flask import Flask,render_template,request,redirect,url_for,session, send_file
+from flask import Flask,render_template,request, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 import json
 import os
@@ -6,10 +6,6 @@ from datetime import datetime
 from flask_pymongo import pymongo
 from bson.json_util import dumps, loads
 from pathlib import Path 
-from cryptography.fernet import Fernet
-
-key = Fernet.generate_key()
-salt = key.decode('utf8')
 
 app = Flask(__name__)
 CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mongodb.net/test_crd?retryWrites=true&w=majority"
@@ -17,7 +13,6 @@ CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mo
 
 client = pymongo.MongoClient(CONNECTION_STRING)
 
-user_db = client['test_crd']['users']
 db = client['test_crd']['crd']
 
 @app.route("/", methods = ["POST", "GET"])
