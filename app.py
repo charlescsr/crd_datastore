@@ -19,8 +19,8 @@ user_db = client['test_crd']['users']
 db = client['test_crd']['crd']
 
 @app.route("/", methods = ["POST", "GET"])
-def log():
-    return render_template("success.html")
+def index():
+    return render_template("index.html")
     
 @app.route("/create", methods = ["POST", "GET"])
 def create():
