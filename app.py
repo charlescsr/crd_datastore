@@ -1,16 +1,17 @@
 from flask import Flask,render_template,request,redirect,url_for,session
-import pymongo
+from flask_pymongo import pymongo
 from cryptography.fernet import Fernet
 
 key = Fernet.generate_key()
 salt = key.decode('utf8')
 
 app = Flask(__name__)
+CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mongodb.net/test_crd?retryWrites=true&w=majority"
+#CONNECTION_STRING = "mongodb://localhost:27018/test_crd"
 
-CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@csr.qfh5r.mongodb.net/test_crd?retryWrites=true&w=majority"
 client = pymongo.MongoClient(CONNECTION_STRING)
+
 user_db = client['test_crd']['users']
-db = client['test_crd']['crd']
 
 @app.route("/", methods = ["POST", "GET"])
 def log():
@@ -22,7 +23,6 @@ def signup():
 
 @app.route("/register", methods = ["POST","GET"])
 def reg():
-
   message = ''
 
   if request.method == 'POST':
@@ -53,41 +53,42 @@ def reg():
         if password != r_password:
             message = "Password doesn't match"
             return render_template("register.html", msg = message)
-        else:
-            user_db.insert_one({"username" : ur, "email" : em, "password" : k, "salt" : salt})
+
+    user_db.insert_one({"username" : ur, "email" : em, "password" : k, "salt" : salt}) #Indent issue here. Now ok when bringing it backward
+
     return render_template("login.html") 
   
 @app.route("/allow", methods = ["POST", "GET"])
 def allow():
-  message=''
-  flag=0
-  if request.method == "POST":
-    u=request.form["id"]
-    pas=request.form["key"]
-    name=str(u).lower()
-    users=user_db.find({})
-    for x in users:
-      n=x['username']
-      if n == name:
-        flag=1
-        
-    if(flag==0):
-      message="Invalid Username"  
-      return render_template("login.html",msg=message) 
-    user=user_db.find({"username":name})
-    for x in user:
-      pwd=x['password']
-      sss=x['salt']
-      s=pwd.encode()
-      instance=sss.encode()
-      crypter=Fernet(instance)
-      decryptpw=crypter.decrypt(s)
-      returned=decryptpw.decode('utf8')
-      if returned == pas:
-        return render_template("success.html")
-      else:
-        message="Invalid Password"  
-        return render_template("login.html",msg=message) 
+    message=''
+    flag=0
+    if request.method == "POST":
+        u = request.form["id"]
+        pas = request.form["key"]
+        name = str(u).lower()
+        users = user_db.find({})
+        for x in users:
+            n = x['username']
+            if n == name:
+                flag = 1
+            
+        if flag == 0:
+            message = "Invalid Username"  
+            return render_template("login.html",msg=message) 
+        user = user_db.find({"username":name})
+        for x in user:
+            pwd = x['password']
+            sss = x['salt']
+            s = pwd.encode()
+            instance = sss.encode()
+            crypter = Fernet(instance)
+            decryptpw = crypter.decrypt(s)
+            returned = decryptpw.decode('utf8')
+            if returned == pas:
+                return render_template("success.html")
+            else:
+                message="Invalid Password"  
+                return render_template("login.html",msg=message) 
 
 
 
