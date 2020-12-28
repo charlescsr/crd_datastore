@@ -1,6 +1,8 @@
 from flask import Flask,render_template,request,redirect,url_for,session, send_file
 from werkzeug.utils import secure_filename
 import json
+import os
+from datetime import datetime
 from flask_pymongo import pymongo
 from bson.json_util import dumps, loads
 from pathlib import Path 
@@ -26,10 +28,21 @@ def index():
 def create():
     k = request.form['key']
     value = request.files['value']
+    ttl = request.form['ttl']
     if value.filename.split('.')[1] == 'json':
         value.save(secure_filename(value.filename))
         f = open(value.filename,)
         data = json.load(f)
+        os.remove(value.filename)
+        if ttl != 0:
+            cur = db.find({"key": k})
+            if cur.count() == 0:
+                fin_value = {"key": k, "value": data, "createdAt": datetime.now()}
+                db.insert_one(fin_value)
+                db.create_index({"createdAt": 1}, { "expireAfterSeconds": ttl})
+            else:
+                return "Key already exists"
+
         fin_value = {"key": k, "value": data}
         db.insert_one(fin_value)
 
