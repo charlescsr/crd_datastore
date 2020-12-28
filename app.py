@@ -11,11 +11,6 @@ CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@csr.qfh5r.mongodb.ne
 client = pymongo.MongoClient(CONNECTION_STRING)
 user_db = client['users']['user_data']
 db = client['test_crd']['crd']
-#db = client.get_database('manager')
-records = user_db.registry_records
-
-#app.config['MONGO_URI']="mongodb://localhost:27017/manager"
-#mongo=PyMongo(app)
 
 @app.route("/", methods = ["POST", "GET"])
 def log():
@@ -46,7 +41,7 @@ def reg():
     bush = crypter.encrypt(obj)
     k = str(bush, 'utf8')
 
-    users = records.find({})
+    users = user_db.find({})
   
     for x in users:
         usr = x['username']
@@ -59,8 +54,7 @@ def reg():
             message = "Password doesn't match"
             return render_template("register.html", msg = message)
         else:
-            users = records.insert_one({"username" : ur, "email" : em, "password" : k, "salt" : salt})
-
+            user_db.insert_one({"username" : ur, "email" : em, "password" : k, "salt" : salt})
     return render_template("login.html") 
   
 @app.route("/allow", methods = ["POST", "GET"])
@@ -71,7 +65,7 @@ def allow():
     u=request.form["id"]
     pas=request.form["key"]
     name=str(u).lower()
-    users=records.find({})
+    users=user_db.find({})
     for x in users:
       n=x['username']
       if n == name:
@@ -80,7 +74,7 @@ def allow():
     if(flag==0):
       message="Invalid Username"  
       return render_template("login.html",msg=message) 
-    user=records.find({"username":name})
+    user=user_db.find({"username":name})
     for x in user:
       pwd=x['password']
       sss=x['salt']
