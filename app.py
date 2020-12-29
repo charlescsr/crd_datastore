@@ -1,20 +1,36 @@
-from flask import Flask,render_template,request, redirect, url_for, session, send_file
-from werkzeug.utils import secure_filename
-import json
-import os
-from datetime import datetime
-from flask_pymongo import pymongo
-from bson.json_util import dumps, loads
-from pathlib import Path 
+'''Procedure for creating a file based key-data store
+This is documentation on my code in implementing a file based key-data store using Python.
 
+This is done in the form of a web application using the Flask Framework
+
+Author: Charles Samuel R, Final Year CSE - St Joseph's College of Engineering
+Date: 28/Dec/2020                  Version: 1.0
+'''
+
+#-------------------------------------------------------------------------------------------------------------
+#PACKAGES IMPORTED
+# This section contains the packages I used to implement the solution
+from flask import Flask,render_template,request, session, send_file #The base for the application
+from werkzeug.utils import secure_filename #Save the file to write to the DB
+import json #To handle JSON value
+import os #To Remove temporary file to save storage
+from flask_pymongo import pymongo #To interact with Mongo DB
+from bson.json_util import dumps, loads #To get final Data Store
+from pathlib import Path #Get path of file to send to client
+#-------------------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------------------------------
+# MAIN VARIABLES
+# This is the main variables that will be used throughout the program
+# These first three are for sessions
 SAMPLE_USERID = 1
 SESSION_PRE = "data_"
-SESSION_POST = "_store"
-app = Flask(__name__)
-app.secret_key = '?A7_`a?^k=9+1k6Z@XX0vFpDasd"pQ'
-CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mongodb.net/test_crd?retryWrites=true&w=majority"
-#CONNECTION_STRING = "mongodb://localhost:27018/test_crd"
-
+SESSION_POST = "_store" 
+app = Flask(__name__) # To initialise the app 
+app.secret_key = '?A7_`a?^k=9+1k6Z@XX0vFpDasd"pQ' # Secret key provides security for sessions
+CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mongodb.net/test_crd?retryWrites=true&w=majority" #Connect to Mongo DB
+#CONNECTION_STRING = "mongodb://localhost:27018/test_crd" #Localhost connection string
+#-------------------------------------------------------------------------------------------------------------
 client = pymongo.MongoClient(CONNECTION_STRING)
 
 db = client['test_crd']['crd']
