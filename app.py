@@ -35,12 +35,19 @@ client = pymongo.MongoClient(CONNECTION_STRING) # Connect to Mongo DB
 db = client['test_crd']['crd']
 user_db = client['test_crd']['users']
 
+#---------------------------------------------------------------------------------------------------
+# USER FUNCTIONS
+# This section contains functions declared for use in the application
 def validate_user(username):
     '''
         Function to return string with username for session
     '''
     return SESSION_PRE+str(username) + SESSION_POST
+#---------------------------------------------------------------------------------------------------
 
+#---------------------------------------------------------------------------------------------------
+# ROUTES
+# This section contains all the routes of the web application
 @app.route("/", methods = ["POST", "GET"])
 def index():
     '''
@@ -153,6 +160,11 @@ def download():
     user_db.delete_one({"username": session['name']})
 
     return send_file(Path('data.json'), attachment_filename=final_file, as_attachment=True)
+#---------------------------------------------------------------------------------------------------
 
+#---------------------------------------------------------------------------------------------------
+# MAIN BLOCK
+# This is the block that initialises the web application
 if __name__ == "__main__":
     app.run(debug=True)
+#---------------------------------------------------------------------------------------------------
