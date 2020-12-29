@@ -105,13 +105,13 @@
 			
 			<div class="modal-body">
 				<div class="tab">
-					<button class="tablinks" onclick="openCity(event, 'Create')">Create</button>
+					<button class="tablinks active" onclick="openCity(event, 'Create')">Create</button>
 					<button class="tablinks" onclick="openCity(event, 'Read')">Read</button>
 					<button class="tablinks" onclick="openCity(event, 'Delete')">Delete</button>
 					<button class="tablinks" onclick="openCity(event, 'Download')">Download</button>
 				  </div>
 				  
-				  <div id="Create" class="tabcontent active" >
+				  <div id="Create" class="tabcontent" style="display: block;">
 					<form action="/create" method="post" enctype="multipart/form-data">
 						{% if msg1 %}
 						<span class="s"><p>{{ msg1 }}</p></span> 

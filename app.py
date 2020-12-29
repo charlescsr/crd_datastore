@@ -7,17 +7,41 @@ from flask_pymongo import pymongo
 from bson.json_util import dumps, loads
 from pathlib import Path 
 
+SAMPLE_USERID = 1
+SESSION_PRE = "data_"
+SESSION_POST = "_store"
 app = Flask(__name__)
+app.secret_key = '?A7_`a?^k=9+1k6Z@XX0vFpDasd"pQ'
 CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mongodb.net/test_crd?retryWrites=true&w=majority"
 #CONNECTION_STRING = "mongodb://localhost:27018/test_crd"
 
 client = pymongo.MongoClient(CONNECTION_STRING)
 
 db = client['test_crd']['crd']
+user_db = client['test_crd']['users']
+
+def validate_user(username):
+    return SESSION_PRE+str(SAMPLE_USERID) + SESSION_POST
 
 @app.route("/", methods = ["POST", "GET"])
 def index():
-    return render_template("index.html")
+    return render_template("main.html")
+
+@app.route("/enter", methods=["GET", "POST"])
+def enter():
+    name = request.form["user"]
+    if user_db.find({"username": name}).count() == 0:
+        user_db.insert_one({"username": name})
+        sid = validate_user(name)
+        if(sid):
+            global SAMPLE_USERID
+            session['sid'] = sid
+            session['name'] = name
+            SAMPLE_USERID += 1
+    else:
+        return "Name is already in use"
+
+    return render_template("create.html")
     
 @app.route("/create", methods = ["POST", "GET"])
 def create():
@@ -29,56 +53,67 @@ def create():
         f = open(value.filename,)
         data = json.load(f)
         os.remove(value.filename)
-        if ttl != 0:
-            cur = db.find({"key": k})
-            if cur.count() == 0:
-                fin_value = {"key": k, "value": data, "createdAt": datetime.now()}
-                db.insert_one(fin_value)
-                db.create_index({"createdAt": 1}, { "expireAfterSeconds": ttl})
-            else:
-                return "Key already exists"
+        #if ttl != 0:
+        #    cur = db.find({"key": k})
+        #    if cur.count() == 0:
+        #        fin_value = {"key": k, "value": data, "createdAt": datetime.now()}
+        #        db.insert_one(fin_value)
+                #db.create_index({"createdAt": 1}, { "expireAfterSeconds": ttl})
+        #    else:
+        #        return "Key already exists"
 
-        fin_value = {"key": k, "value": data}
+        fin_value = {"key": k, "value": data, "createdBy": session['name']}
         db.insert_one(fin_value)
 
-        return "Key created"
+        return render_template("create.html", msg1="Key created")
 
-    return "Wrong file format"
+    return render_template("create.html", msg1="Wrong File Format")
 
 @app.route("/read", methods=["GET", "POST"])
 def read():
     k = str(request.form.get("key"))
-    v = None 
-    cur = db.find({"key": k})
-    if cur.count() == 0:
-        return "Key not found"
+    v = None
+    cur = db.find({"key": k, "createdBy": session['name']})
+    cur1 = db.find({"key": k})
+    cur2 = db.find({"createdBy": session['name']})
+    if cur1.count() == 0:
+        return render_template("read.html", msg2="Key not found")
+    elif cur2.count() == 0:
+        return render_template("read.html", msg2="Someone else has that key")
     
     for x in cur:
         v = x['value']
+    if v == None:
+        return render_template("read.html", msg2="Someone else has that key")
 
-    return "Value is "+str(v)
+    return render_template("read.html", msg2="Value is "+str(v))
 
 @app.route("/delete", methods=["GET", "POST"])
 def delete():
     k = str(request.form.get("key"))
-    cur = db.find({"key": k})
-    if cur.count() == 0:
-        return "Key not found"
+    cur1 = db.find({"key": k})
+    cur2 = db.find({"createdBy": session['name']})
+    if cur1.count() == 0:
+        return render_template("delete.html", msg3="Key not found")
+    elif cur2.count() == 0:
+        return render_template("delete.html", msg3="Someone else has that key")
     
     db.delete_one({"key": k})
 
-    return "Key deleted successfully"
+    return render_template("delete.html", msg3="Key deleted successfully")
 
 @app.route("/download", methods=["GET", "POST"])
 def download():
-    cur = db.find({}, {"_id":0})
+    cur = db.find({"createdBy":session['name']}, {"_id":0, "createdBy": 0})
     f = 'data.json'
     list_cur = list(cur) 
   
     json_data = dumps(list_cur, indent = 4)  
 
     with open('data.json', 'w') as file: 
-        file.write(json_data) 
+        file.write(json_data)
+
+    user_db.delete_one({"username": session['name']}) 
     
     return send_file(Path('data.json'), attachment_filename=f, as_attachment=True)
     
