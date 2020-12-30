@@ -43,7 +43,16 @@ def validate_user(username):
     '''
         Function to return string with username for session
     '''
-    return SESSION_PRE+str(username) + SESSION_POST
+    return SESSION_PRE + str(username) + SESSION_POST
+
+def db_size():
+    '''
+        Function to check Main DB size and prevent create if size is at 1GB
+    '''
+    cmd = db.runCommand({
+        "dbStats": 1,
+    })
+    return cmd["size"]
 #---------------------------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------------------------
@@ -79,6 +88,9 @@ def create():
     '''
         Endpoint for the create operation
     '''
+    if db_size() >= 1024 * 1024 * 1024:
+        return render_template("create.html", msg1="Create not possible. Space exceeded")
+
     k = request.form['key']
     value = request.files['value']
     ttl = request.form['ttl']
