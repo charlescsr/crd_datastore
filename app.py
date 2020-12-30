@@ -12,6 +12,7 @@ Date: 28/Dec/2020                  Version: 1.0
 from pathlib import Path #Get path of file to send to client
 import os #To Remove temporary file to save storage
 import json #To handle JSON value
+from datetime import datetime, timedelta
 from flask import Flask,render_template,request, session, send_file #The base for the application
 from werkzeug.utils import secure_filename #Save the file to write to the DB
 from flask_pymongo import pymongo #To interact with Mongo DB
@@ -80,21 +81,22 @@ def create():
     '''
     k = request.form['key']
     value = request.files['value']
-    #ttl = request.form['ttl']
+    ttl = request.form['ttl']
+    now = datetime.now()
     value.save(secure_filename(value.filename))
     file = open(value.filename,)
     data = json.load(file)
     os.remove(value.filename)
-        #if ttl != 0:
-        #    cur = db.find({"key": k})
-        #    if cur.count() == 0:
-        #        fin_value = {"key": k, "value": data, "createdAt": datetime.now()}
-        #        db.insert_one(fin_value)
-                #db.create_index({"createdAt": 1}, { "expireAfterSeconds": ttl})
-        #    else:
-        #        return "Key already exists"
+    if ttl != 0:
+        cur = db.find({"key": k})
+        if cur.count() == 0:
+            fin_value = {"key": k, "value": data, "Time Stamp": now, "TTL": ttl, "createdBy": session['name']}
+            db.insert_one(fin_value)
+            return render_template("create.html", msg1="Key created")
+        else:
+            return "Key already exists"
 
-    fin_value = {"key": k, "value": data, "createdBy": session['name']}
+    fin_value = fin_value = {"key": k, "value": data, "Time Stamp": now, "TTL": ttl, "createdBy": session['name']}
     db.insert_one(fin_value)
 
     return render_template("create.html", msg1="Key created")
@@ -106,17 +108,32 @@ def read():
     '''
     k = str(request.form.get("key"))
     value = None
+    now = datetime.now()
+    ttl = None
+    time = None
     cur = db.find({"key": k, "createdBy": session['name']})
     cur1 = db.find({"key": k})
     cur2 = db.find({"createdBy": session['name']})
+    for val in cur:
+        ttl = val['TTL']
+        time = val['Time Stamp']
+        value = val['value']
+
+    exp = time + timedelta(seconds=int(ttl))
+    exp = exp.strftime("%X")
+
+    if ttl != 0 and now.strftime("%X") >= exp:
+        return  render_template("read.html", msg2="Key expired")
+
+    if ttl != 0 and exp < now.strftime("%X"):
+        return render_template("read.html", msg2="Value is "+str(value))
+
     if cur1.count() == 0:
         return render_template("read.html", msg2="Key not found")
 
     if cur2.count() == 0:
         return render_template("read.html", msg2="Someone else has that key")
-
-    for val in cur:
-        value = val['value']
+ 
     if value is None:
         return render_template("read.html", msg2="Someone else has that key")
 
@@ -128,8 +145,27 @@ def delete():
         Endpoint for the Delete operation
     '''
     k = str(request.form.get("key"))
+    now = datetime.now()
+    ttl = None
+    time = None
+    cur = db.find({"key": k, "createdBy": session['name']})
     cur1 = db.find({"key": k})
     cur2 = db.find({"createdBy": session['name']})
+    
+    for val in cur:
+        ttl = val['TTL']
+        time = val['Time Stamp']
+
+    exp = time + timedelta(seconds=int(ttl))
+    exp = exp.strftime("%X")
+
+    if ttl != 0 and now.strftime("%X") >= exp:
+        return  render_template("delete.html", msg2="Key expired")
+
+    if ttl != 0 and exp < now.strftime("%X"):
+        db.delete_one({"key": k})
+        return render_template("delete.html", msg3="Key deleted successfully")
+
     if cur1.count() == 0:
         return render_template("delete.html", msg3="Key not found")
 
