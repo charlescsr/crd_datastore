@@ -90,13 +90,16 @@ def create():
     if ttl != 0:
         cur = db.find({"key": k})
         if cur.count() == 0:
-            fin_value = {"key": k, "value": data, "Time Stamp": now, "TTL": ttl, "createdBy": session['name']}
+            fin_value = {"key": k, "value": data, "Time Stamp": now,
+                        "TTL": ttl, "createdBy": session['name']}
             db.insert_one(fin_value)
             return render_template("create.html", msg1="Key created")
-        else:
+
+        if cur.count() != 0:
             return "Key already exists"
 
-    fin_value = fin_value = {"key": k, "value": data, "Time Stamp": now, "TTL": ttl, "createdBy": session['name']}
+    fin_value = fin_value = {"key": k, "value": data, "Time Stamp": now,
+                            "TTL": ttl, "createdBy": session['name']}
     db.insert_one(fin_value)
 
     return render_template("create.html", msg1="Key created")
@@ -133,7 +136,7 @@ def read():
 
     if cur2.count() == 0:
         return render_template("read.html", msg2="Someone else has that key")
- 
+
     if value is None:
         return render_template("read.html", msg2="Someone else has that key")
 
@@ -151,7 +154,7 @@ def delete():
     cur = db.find({"key": k, "createdBy": session['name']})
     cur1 = db.find({"key": k})
     cur2 = db.find({"createdBy": session['name']})
-    
+
     for val in cur:
         ttl = val['TTL']
         time = val['Time Stamp']
