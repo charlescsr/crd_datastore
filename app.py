@@ -13,7 +13,7 @@ from pathlib import Path #Get path of file to send to client
 import os #To Remove temporary file to save storage
 import json #To handle JSON value
 from datetime import datetime, timedelta
-from flask import Flask,render_template,request, session, send_file #The base for the application
+from flask import Flask,render_template, request, session, send_file #The base for the application
 from werkzeug.utils import secure_filename #Save the file to write to the DB
 from flask_pymongo import pymongo #To interact with Mongo DB
 from bson.json_util import dumps #To get final Data Store
@@ -34,7 +34,7 @@ CONNECTION_STRING = "mongodb+srv://charles:0QyVtWs73CMc6DHe@flask-mongo.qfh5r.mo
 client = pymongo.MongoClient(CONNECTION_STRING) # Connect to Mongo DB
 
 db = client['test_crd']['crd']
-user_db = client['test_crd']['users']
+user_db = client['user_info']['users']
 
 #---------------------------------------------------------------------------------------------------
 # USER FUNCTIONS
@@ -49,9 +49,8 @@ def db_size():
     '''
         Function to check Main DB size and prevent create if size is at 1GB
     '''
-    cmd = db.runCommand({
-        "dbStats": 1,
-    })
+    db1 = client.test_crd
+    cmd = db1.command("collstats", "crd")
     return cmd["size"]
 #---------------------------------------------------------------------------------------------------
 
@@ -79,7 +78,7 @@ def enter():
             session['sid'] = sid
             session['name'] = name
     else:
-        return "Name is already in use"
+        return render_template("main.html", msg="Name is already in use")
 
     return render_template("create.html")
 
@@ -89,7 +88,8 @@ def create():
         Endpoint for the create operation
     '''
     if db_size() >= 1024 * 1024 * 1024:
-        return render_template("create.html", msg1="Create not possible. Space exceeded")
+        return render_template("create.html",
+        msg1="Create not possible. Space is above/equal to 1GB")
 
     k = request.form['key']
     value = request.files['value']
@@ -99,16 +99,16 @@ def create():
     file = open(value.filename,)
     data = json.load(file)
     os.remove(value.filename)
+    cur = db.find({"key": k, "createdBy": session['name']})
+    if cur.count() != 0:
+        return render_template("create.html", msg1="Key already exists")
+
     if ttl != 0:
-        cur = db.find({"key": k})
         if cur.count() == 0:
             fin_value = {"key": k, "value": data, "Time Stamp": now,
                         "TTL": ttl, "createdBy": session['name']}
             db.insert_one(fin_value)
             return render_template("create.html", msg1="Key created")
-
-        if cur.count() != 0:
-            return "Key already exists"
 
     fin_value = fin_value = {"key": k, "value": data, "Time Stamp": now,
                             "TTL": ttl, "createdBy": session['name']}
@@ -138,6 +138,7 @@ def read():
     exp = exp.strftime("%X")
 
     if ttl != 0 and now.strftime("%X") >= exp:
+        db.delete_one({"key": k})
         return  render_template("read.html", msg2="Key expired")
 
     if ttl != 0 and exp < now.strftime("%X"):
@@ -175,7 +176,8 @@ def delete():
     exp = exp.strftime("%X")
 
     if ttl != 0 and now.strftime("%X") >= exp:
-        return  render_template("delete.html", msg2="Key expired")
+        db.delete_one({"key": k})
+        return  render_template("delete.html", msg3="Key expired")
 
     if ttl != 0 and exp < now.strftime("%X"):
         db.delete_one({"key": k})
