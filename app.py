@@ -81,11 +81,10 @@ def create():
     k = request.form['key']
     value = request.files['value']
     #ttl = request.form['ttl']
-    if value.filename.split('.')[1] == 'json':
-        value.save(secure_filename(value.filename))
-        file = open(value.filename,)
-        data = json.load(file)
-        os.remove(value.filename)
+    value.save(secure_filename(value.filename))
+    file = open(value.filename,)
+    data = json.load(file)
+    os.remove(value.filename)
         #if ttl != 0:
         #    cur = db.find({"key": k})
         #    if cur.count() == 0:
@@ -95,12 +94,10 @@ def create():
         #    else:
         #        return "Key already exists"
 
-        fin_value = {"key": k, "value": data, "createdBy": session['name']}
-        db.insert_one(fin_value)
+    fin_value = {"key": k, "value": data, "createdBy": session['name']}
+    db.insert_one(fin_value)
 
-        return render_template("create.html", msg1="Key created")
-
-    return render_template("create.html", msg1="Wrong File Format")
+    return render_template("create.html", msg1="Key created")
 
 @app.route("/read", methods=["GET", "POST"])
 def read():

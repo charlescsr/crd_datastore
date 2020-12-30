@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="icon" href="{{url_for('static', filename='csr.png') }}">
 <style>
     body {
 		font-family: 'Varela Round', sans-serif;
@@ -123,10 +124,10 @@
 							</div>
 						</div>
 						<div class="form-group">
+							<span class="s"><p>Value(JSON) - Max 16KB</p></span>
 							<div class="input-group">
-								<span class="s"><p>Value(JSON)</p></span>
 								<span class="input-group-addon"><i class="fa fa-code"></i></span>
-								<input id="jsfile" type="file" class="form-control" name="value" placeholder="Value(In JSON Max 16KB)" required="required">
+								<input id="jsfile" type="file" class="form-control" name="value" accept="application/json" required="required">
 							</div>
 						</div>
 						<div class="form-group">
