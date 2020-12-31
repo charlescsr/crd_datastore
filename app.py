@@ -93,7 +93,7 @@ def create():
 
     k = request.form['key']
     value = request.files['value']
-    ttl = request.form['ttl']
+    ttl = int(request.form['ttl'])
     now = datetime.now()
     value.save(secure_filename(value.filename))
     file = open(value.filename,)
